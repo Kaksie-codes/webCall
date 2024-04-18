@@ -2,6 +2,7 @@ import express from 'express'
 import http from 'http'
 import cors from 'cors'
 import { Server } from 'socket.io'; // Socket.IO library for real-time, bidirectional communication
+import { roomHandler } from './room/roomhandler';
 
 
 const PORT = 8080;
@@ -29,8 +30,11 @@ server.listen(PORT, () => {
 
 // when client connects to our web signalling server
 io.on('connection', (socket) => {
-    console.log('user is connected ...');
-    
+    console.log(' a user is connected');
+
+    // handles all login related to a room
+    roomHandler(socket);
+
     socket.on('disconnect', () => {
         console.log('user is disconnected ...');
     })

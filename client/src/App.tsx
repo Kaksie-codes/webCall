@@ -1,20 +1,20 @@
-import SocketIO  from 'socket.io-client'
+
+
+import { Route, Routes } from 'react-router-dom'
+import HomePage from './pages/HomePage'
+import RoomPage from './pages/RoomPage'
 import './App.css'
-import { useEffect } from 'react'
-
-
-const WS = 'http://localhost:8080';
 
 function App() {
-  useEffect(() => {
-    SocketIO(WS)
-  }, [])
+  
 
   return (
-    <>
-      <h1 className='text-green-500'>Kaulture</h1>
-        
-    </>
+    <div>
+        <Routes>
+          <Route path='/' element={<HomePage/>}/>
+          <Route path='/room/:roomId' element={<RoomPage/>}/>
+        </Routes>    
+    </div>
   )
 }
 
