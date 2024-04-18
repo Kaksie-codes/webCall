@@ -1,7 +1,14 @@
+import SocketIO  from 'socket.io-client'
 import './App.css'
+import { useEffect } from 'react'
+
+
+const WS = 'http://localhost:8080';
 
 function App() {
-  
+  useEffect(() => {
+    SocketIO(WS)
+  }, [])
 
   return (
     <>
