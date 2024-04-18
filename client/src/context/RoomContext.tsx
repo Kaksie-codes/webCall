@@ -1,31 +1,43 @@
-import { ReactNode, createContext, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import SocketIOClient from 'socket.io-client';
+import { ReactNode, createContext, useEffect } from 'react'; // Importing necessary modules from React
+import { useNavigate } from 'react-router-dom'; // Importing the useNavigate hook from react-router-dom
+import SocketIOClient from 'socket.io-client'; // Importing the Socket.IO client library
 
-const webServer = 'http://localhost:8080';
+// Defining the URL of the WebSocket server
+const webSocketServer = 'http://localhost:8080'; 
 
+// Defining the type for the children prop
 interface RoomProviderProps {
-    children: ReactNode;
+    children: ReactNode; 
 }
 
-export const RoomContext = createContext<null | any>(null);
+// Creating a context for managing room-related data
+export const RoomContext = createContext<null | any>(null); 
 
-const webSocket = SocketIOClient(webServer);
+// Creating a WebSocket client instance connected to the web server
+const webSocketClient = SocketIOClient(webSocketServer); 
 
-export const RoomProvider = ({ children }: RoomProviderProps) => {
-    const navigate = useNavigate()
-    const enterRoom = ({ roomId } : { roomId: string }) => {
-        console.log({roomId});    
-        navigate(`/room/${roomId}`)    
-    }
+// Defining the RoomProvider component
+export const RoomProvider = ({ children }: RoomProviderProps) => { 
+    // Initializing the navigate function using the useNavigate hook
+    const navigate = useNavigate();
+    
+    // Defining a function to enter a room
+    const enterRoom = ({ roomId }: { roomId: string }) => { 
+        console.log({roomId});
 
-    useEffect(() => {
-        webSocket.on('room-created', enterRoom)
-    }, [])
+        // Navigating to the specified room
+        navigate(`/room/${roomId}`); 
+    };
+
+    // Executing side effects after the component renders
+    useEffect(() => { 
+        // Listening for the 'room-created' event and calling enterRoom
+        webSocketClient.on('room-created', enterRoom); 
+    }, []); 
 
     return (
-        <RoomContext.Provider value={{ webSocket }}>
+        <RoomContext.Provider value={{ webSocketClient }}> 
             {children}
         </RoomContext.Provider>
     );
-}
+};
