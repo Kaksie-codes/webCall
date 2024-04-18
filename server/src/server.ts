@@ -3,6 +3,7 @@ import http from 'http'; // Importing the HTTP module to create an HTTP server
 import cors from 'cors'; // Importing CORS middleware to enable cross-origin resource sharing
 import { Server } from 'socket.io'; // Importing the Socket.IO library for real-time, bidirectional communication
 import { roomHandler } from './room/roomhandler'; // Importing a custom room handler module
+// import { ExpressPeerServer } from 'peer';
 
 const PORT = 8080; // Setting the port number for the server
 
@@ -14,6 +15,15 @@ app.use(cors());
 
 // Create an HTTP server using express app
 const server = http.createServer(app);
+
+// // Create a PeerJS server using the HTTP server
+// const peerServer = ExpressPeerServer(server, {
+//     path: "/peerjs", 
+//     // debug: true // Enable debugging for PeerJS server
+// });
+
+// // Use the PeerJS server middleware
+// app.use('/peerjs', peerServer);
 
 // Initialize a web socket server with the created server
 const io = new Server(server, {
