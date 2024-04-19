@@ -22,6 +22,7 @@ export const RoomProvider = ({ children }: RoomProviderProps) => {
     const [me, setMe] = useState<Peer | null>(null); 
     const [stream, setStream] = useState<MediaStream | null>(null); 
     const [peers, dispatch] = useReducer(peersReducer, {}); 
+    const [screenSharingId, setScreenSharingId] = useState<string>('');
 
     const enterRoom = ({ roomId }: { roomId: string }) => { 
         navigate(`/room/${roomId}`); 
@@ -33,7 +34,30 @@ export const RoomProvider = ({ children }: RoomProviderProps) => {
 
     const removePeer = (peerId:string) => {
         dispatch(removePeerAction(peerId));
-    }    
+    }   
+    
+    const shareScreen = () => {
+        if(screenSharingId){
+            navigator.mediaDevices.getUserMedia({video: true, audio: true}).then(switchStream)
+        }else{
+            navigator.mediaDevices.getDisplayMedia({}) // Request only video for screen sharing
+            .then(switchStream)
+            .catch((error) => {
+                console.error('Error accessing screen sharing stream:', error);                
+            });
+        }            
+    };
+
+    const switchStream = (stream: MediaStream) => {
+        setStream(stream);
+        setScreenSharingId(me?.id || "");         
+        Object.values(me?.connections).forEach(((connection:any) => {
+            const videoTrack = stream?.getTracks().find(track => track.kind === 'video');
+            connection[0].peerConnection.getSenders()[1].replaceTrack(videoTrack)
+            .catch((err:any) => console.log(err))
+        }))
+    }
+    
 
     useEffect(() => {
          const myId = uuidV4();
@@ -89,7 +113,7 @@ export const RoomProvider = ({ children }: RoomProviderProps) => {
     console.log({peers})
 
     return (
-        <RoomContext.Provider value={{ webSocketClient, me, stream, peers }}> 
+        <RoomContext.Provider value={{ webSocketClient, me, stream, peers, shareScreen }}> 
             {children}
         </RoomContext.Provider>
     );

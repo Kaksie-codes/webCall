@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom"; // Importing the useParams hook fr
 import { RoomContext } from "../context/RoomContext"; // Importing the RoomContext from the context file
 import VideoPlayer from "../components/VideoPlayer"; // Importing the VideoPlayer component
 import { PeerState } from "../context/peerReducers";
+import ShareScreenButton from "../components/ShareScreenButton";
 
 // Defining the RoomPage component
 const RoomPage = () => {
@@ -10,7 +11,7 @@ const RoomPage = () => {
     const { roomId } = useParams(); 
 
     // Extracting the WebSocket client, current user, and stream from the RoomContext
-    const { webSocketClient, me, stream, peers } = useContext(RoomContext); 
+    const { webSocketClient, me, stream, peers, shareScreen } = useContext(RoomContext); 
 
     
     // Executing side effects after the component renders
@@ -40,6 +41,9 @@ const RoomPage = () => {
                         return <VideoPlayer stream={peer.stream} key={index}/>
                     })
                 }
+            </div>
+            <div className="fixed w-full text-center bottom-0 p-6 border-t-2">
+                <ShareScreenButton onClick={shareScreen}/>
             </div>
         </div>
     );
