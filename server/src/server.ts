@@ -18,7 +18,7 @@ const server = http.createServer(app);
 
 // // Create a PeerJS server using the HTTP server
 // const peerServer = ExpressPeerServer(server, {
-//     path: "/peerjs", 
+//     path: "/peerjs",
 //     // debug: true // Enable debugging for PeerJS server
 // });
 
