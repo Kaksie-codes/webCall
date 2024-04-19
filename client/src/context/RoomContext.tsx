@@ -1,5 +1,5 @@
 import { ReactNode, createContext, useEffect, useState, useReducer } from 'react'; 
-import { useNavigate, useParams } from 'react-router-dom'; 
+import { useNavigate } from 'react-router-dom'; 
 import SocketIOClient from 'socket.io-client'; 
 import Peer from 'peerjs'; 
 import { v4 as uuidV4 } from 'uuid'; 
@@ -16,13 +16,13 @@ export const RoomContext = createContext<null | any>(null);
 
 const webSocketClient = SocketIOClient(webSocketServer); 
 
-export const RoomProvider = ({ children }: RoomProviderProps) => { 
-    const { roomId } = useParams();    
+export const RoomProvider = ({ children }: RoomProviderProps) => {      
     const navigate = useNavigate();
     const [me, setMe] = useState<Peer | null>(null); 
     const [stream, setStream] = useState<MediaStream | null>(null); 
     const [peers, dispatch] = useReducer(peersReducer, {}); 
     const [screenSharingId, setScreenSharingId] = useState<string>('');
+    const [roomId, setRoomId] = useState<string>("")
 
     const enterRoom = ({ roomId }: { roomId: string }) => { 
         navigate(`/room/${roomId}`); 
@@ -96,11 +96,13 @@ export const RoomProvider = ({ children }: RoomProviderProps) => {
         webSocketClient.on('room-created', enterRoom); 
         webSocketClient.on('get-roomies', getRoomies); 
         webSocketClient.on("user-disconnected", removePeer); 
+        webSocketClient.on("user-started-sharing", (peerId) => setScreenSharingId(peerId)); 
+        webSocketClient.on("user-stopped-sharing", () => setScreenSharingId("")); 
 
-        me.on('open', (id) => {
-            console.log('My peer ID is: ' + id);
-            webSocketClient.emit('join-room', { roomId, peerId: id }); 
-        });
+        // me.on('open', (id) => {
+        //     console.log('My peer ID is: ' + id);
+        //     webSocketClient.emit('join-room', { roomId, peerId: id }); 
+        // });
 
         // Cleanup function to disconnect WebSocket client and destroy PeerJS instance when component unmounts
         return () => {
@@ -110,10 +112,16 @@ export const RoomProvider = ({ children }: RoomProviderProps) => {
         } 
     }, [me]);    
 
-    console.log({peers})
+    useEffect(() => {
+        if(screenSharingId){
+            webSocketClient.emit("start-sharing", { peerId:screenSharingId, roomId});
+        }else{
+            webSocketClient.emit("stop-sharing");
+        }        
+    }, [screenSharingId, roomId])    
 
     return (
-        <RoomContext.Provider value={{ webSocketClient, me, stream, peers, shareScreen }}> 
+        <RoomContext.Provider value={{ webSocketClient, me, stream, peers, shareScreen, screenSharingId, setRoomId }}> 
             {children}
         </RoomContext.Provider>
     );

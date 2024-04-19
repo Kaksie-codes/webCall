@@ -65,9 +65,23 @@ export const roomHandler = (socket: Socket) => {
         socket.to(roomId).emit("user-disconnected", peerId)
     }
 
+    const startSharing = ({peerId, roomId}: RoomParams) => {
+        socket.to(roomId).emit("user-started-sharing", peerId);
+    }
+
+    const stopSharing = (roomId : string) => {
+        socket.to(roomId).emit("user-stopped-sharing");
+    }
+
     // Listening for 'create-room' event to create a new room
     socket.on('create-room', createRoom);
 
     // Listening for 'join-room' event to join an existing room
     socket.on('join-room', joinRoom);
+
+    // Listening for 'stop-sharing' event to start screen sharing
+    socket.on('start-sharing', startSharing);
+
+    // Listening for 'stop-sharing' event to stop screen sharing
+    socket.on('stop-sharing', stopSharing);
 };
