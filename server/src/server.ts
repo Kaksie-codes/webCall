@@ -43,7 +43,7 @@ io.on('connection', (socket) => {
     console.log('A user is connected');
 
     // Handle all login-related actions for a room
-    roomHandler(socket);
+    roomHandler(socket, io);
 
     // Handle when a client closes the webpage or application
     socket.on('disconnect', () => {

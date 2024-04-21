@@ -3,8 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import SocketIOClient from 'socket.io-client'; 
 import Peer from 'peerjs'; 
 import { v4 as uuidV4 } from 'uuid'; 
-import { peersReducer } from './peerReducers'; 
-import { addPeerAction, removePeerAction } from './peerActions'; 
+import { peersReducer } from '../reducers/peerReducer/peerReducer'; 
+import { addPeerAction, removePeerAction } from '../reducers/peerReducer/peerActions'; 
+import { Message } from '../types/chat';
+import { chatReducer } from '../reducers/chatReducer/chatReducer';
+import { addHistoryAction, addMessageAction, toggleChatAction } from '../reducers/chatReducer/chatActions';
 
 const webSocketServer = 'http://localhost:8080'; 
 
@@ -21,6 +24,10 @@ export const RoomProvider = ({ children }: RoomProviderProps) => {
     const [me, setMe] = useState<Peer | null>(null); 
     const [stream, setStream] = useState<MediaStream | null>(null); 
     const [peers, dispatch] = useReducer(peersReducer, {}); 
+    const [chat, chatDispatch] = useReducer(chatReducer, {
+        messages: [],
+        isChatOpen: false,
+    })
     const [screenSharingId, setScreenSharingId] = useState<string>('');
     const [roomId, setRoomId] = useState<string>("")
 
@@ -57,7 +64,29 @@ export const RoomProvider = ({ children }: RoomProviderProps) => {
             .catch((err:any) => console.log(err))
         }))
     }
+
+    const sendMessage = (message:string) => {
+        const messageData:Message = {
+            content: message,
+            author: me?.id,
+            timestamp: new Date().getTime()
+        }
+        webSocketClient.emit('create-message', roomId, messageData);
+    }
+
+    const addMessage = (message:Message) => {
+        console.log('message recieved')
+        console.log({message})
+        chatDispatch(addMessageAction(message))
+    }
+
+    const addHistory = (messages:Message[]) => {
+        chatDispatch(addHistoryAction(messages));
+    }
     
+    const toggleChatVisibility = () => {
+        chatDispatch(toggleChatAction(!chat.isChatOpen));
+    }
 
     useEffect(() => {
          const myId = uuidV4();
@@ -95,9 +124,11 @@ export const RoomProvider = ({ children }: RoomProviderProps) => {
 
         webSocketClient.on('room-created', enterRoom); 
         webSocketClient.on('get-roomies', getRoomies); 
-        webSocketClient.on("user-disconnected", removePeer); 
+        webSocketClient.on("user-disconnected", removePeer);         
         webSocketClient.on("user-started-sharing", (peerId) => setScreenSharingId(peerId)); 
         webSocketClient.on("user-stopped-sharing", () => setScreenSharingId("")); 
+        webSocketClient.on("message-created", addMessage); 
+        webSocketClient.on("get-messages", addHistory); 
 
         // me.on('open', (id) => {
         //     console.log('My peer ID is: ' + id);
@@ -110,7 +141,7 @@ export const RoomProvider = ({ children }: RoomProviderProps) => {
             me.destroy();
         };
         } 
-    }, [me]);    
+    }, [me, webSocketClient]);    
 
     useEffect(() => {
         if(screenSharingId){
@@ -120,8 +151,21 @@ export const RoomProvider = ({ children }: RoomProviderProps) => {
         }        
     }, [screenSharingId, roomId])    
 
+    const contextValues = {
+        webSocketClient, 
+        me, 
+        stream, 
+        peers, 
+        shareScreen, 
+        screenSharingId, 
+        setRoomId,
+        sendMessage,
+        chat,
+        toggleChatVisibility
+    }
+
     return (
-        <RoomContext.Provider value={{ webSocketClient, me, stream, peers, shareScreen, screenSharingId, setRoomId }}> 
+        <RoomContext.Provider value={contextValues}> 
             {children}
         </RoomContext.Provider>
     );

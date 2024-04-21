@@ -1,11 +1,27 @@
-import { useState } from "react"
+import { FormEvent, useContext, useState } from "react"
+import { RoomContext } from "../context/RoomContext";
 
 
 const ChatInput: React.FC = () => {
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState<string>("");
+  const { sendMessage } = useContext(RoomContext);
+
+  const handleSubmit = (e:FormEvent) => {
+    e.preventDefault();
+    // Trim the input value to remove leading and trailing whitespaces
+    const trimmedMessage = message.trim(); // Store the trimmed message in a new variable
+    
+    // Check if the trimmed message is not empty
+    if (trimmedMessage) { 
+        sendMessage(trimmedMessage);
+        
+        // Clear the input field by resetting the message state
+        setMessage(""); 
+      }
+  }
   return (
     <div>
-        <form>
+        <form onSubmit={handleSubmit}>
             <div className="flex">
                 <textarea
                     value={message}

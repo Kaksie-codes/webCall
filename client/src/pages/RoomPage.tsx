@@ -2,7 +2,7 @@ import { useContext, useEffect } from "react"; // Importing necessary modules fr
 import { useParams } from "react-router-dom"; // Importing the useParams hook from react-router-dom
 import { RoomContext } from "../context/RoomContext"; // Importing the RoomContext from the context file
 import VideoPlayer from "../components/VideoPlayer"; // Importing the VideoPlayer component
-import { PeerState } from "../context/peerReducers";
+import { PeerState } from "../reducers/peerReducer/peerReducer";
 import ShareScreenButton from "../components/ShareScreenButton";
 import ChatSection from "../components/ChatSection";
 import ChatButton from "../components/ChatButton";
@@ -13,9 +13,19 @@ const RoomPage = () => {
     const { roomId } = useParams(); 
 
     // Extracting the WebSocket client, current user, and stream from the RoomContext
-    const { webSocketClient, me, stream, peers, shareScreen, screenSharingId, setRoomId } = useContext(RoomContext); 
+    const { 
+        webSocketClient, 
+        me, 
+        stream, 
+        peers, 
+        shareScreen, 
+        screenSharingId, 
+        chat, 
+        setRoomId, 
+        toggleChatVisibility 
+    } = useContext(RoomContext); 
 
-    console.log('screenSharingId ---->>', screenSharingId);
+    // console.log('screenSharingId ---->>', screenSharingId);
 
     // Executing side effects after the component renders
     useEffect(() => { 
@@ -64,13 +74,16 @@ const RoomPage = () => {
                         })
                     }
                 </div>
-                <div className="border-l-2 pb-28 ">
-                    <ChatSection/>
-                </div>
+                {
+                    chat.isChatOpen && 
+                    <div className="border-l-2 pb-28 ">
+                        <ChatSection/>
+                    </div>
+                }                
             </div> 
             <div className="h-28 fixed w-full text-center items-center bottom-0 p-6 border-t-2 bg-white">
                 <ShareScreenButton onClick={shareScreen}/>
-                <ChatButton/>
+                <ChatButton onClick={toggleChatVisibility}/>
             </div>
         </div>
     );

@@ -1,38 +1,22 @@
+import { useContext } from "react"
 import { Message } from "../types/chat"
 import ChatBubble from "./ChatBubble"
 import ChatInput from "./ChatInput"
+import { RoomContext } from "../context/RoomContext"
 
+const ChatSection: React.FC = () => {
+    const { chat } = useContext(RoomContext);
 
-const ChatSection:React.FC = ({}) => {
-    const messages:Message[] = [
-        {
-            content: 'Message 1',
-            author: "Galentzy",
-            timestamp:''
-        },
-        {
-            content: 'Message 2',
-            author: "Duron",
-            timestamp:''
-        },
-        {
-            content: 'Message 3',
-            author: "Mambeya",
-            timestamp:''
-        },
-    ]
-  return (
-    <div className="flex flex-col h-full justify-between">
-        <div>
-            {
-                messages.map((message) => (
-                    <ChatBubble message={message}/>
-                ))
-            }
+    return (
+        <div className="flex flex-col h-full justify-between">
+            <div>
+                {chat?.messages && chat.messages.map((message: Message, index: number) => (
+                    <ChatBubble message={message} key={index} />
+                ))}
+            </div>
+            <ChatInput />
         </div>
-        <ChatInput/>
-    </div>
-  )
+    )
 }
 
 export default ChatSection
