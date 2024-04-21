@@ -4,6 +4,8 @@ import { RoomContext } from "../context/RoomContext"; // Importing the RoomConte
 import VideoPlayer from "../components/VideoPlayer"; // Importing the VideoPlayer component
 import { PeerState } from "../context/peerReducers";
 import ShareScreenButton from "../components/ShareScreenButton";
+import ChatSection from "../components/ChatSection";
+import ChatButton from "../components/ChatButton";
 
 // Defining the RoomPage component
 const RoomPage = () => {
@@ -39,11 +41,10 @@ const RoomPage = () => {
 
     // Returning the JSX for the RoomPage component
     return (
-        <div>
-            RoomPage             
-            <h1>roomid: {roomId}</h1>            
+        <div className="flex flex-col min-h-screen">                        
+            <h1 className="bg-red-500 text-white p-4">roomid: {roomId}</h1>            
             <h1>userid: {me && me._id}</h1>   
-            <div className="flex">
+            <div className="flex grow">
                 {
                     screenSharingVideo && (
                         <div className="w-4/5 pr-4">
@@ -56,18 +57,20 @@ const RoomPage = () => {
                         screenSharingId !== me?.id && (
                             <VideoPlayer stream={stream}/>
                         )
-                    }                
-
-                {
-                    Object.values(peersToShow as PeerState).map((peer, index) => {
-                        return <VideoPlayer stream={peer.stream} key={index}/>
-                    })
-                }
-            </div>
-            </div>         
-            
-            <div className="fixed w-full text-center bottom-0 p-6 border-t-2 bg-white">
+                    } 
+                    {
+                        Object.values(peersToShow as PeerState).map((peer, index) => {
+                            return <VideoPlayer stream={peer.stream} key={index}/>
+                        })
+                    }
+                </div>
+                <div className="border-l-2 pb-28 ">
+                    <ChatSection/>
+                </div>
+            </div> 
+            <div className="h-28 fixed w-full text-center items-center bottom-0 p-6 border-t-2 bg-white">
                 <ShareScreenButton onClick={shareScreen}/>
+                <ChatButton/>
             </div>
         </div>
     );
